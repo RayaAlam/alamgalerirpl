@@ -4,7 +4,6 @@ import 'package:flutter_uilogin/provider/auth_provider.dart';
 import 'package:flutter_uilogin/provider/imagepick_provider.dart';
 import 'package:flutter_uilogin/screen/home_screen.dart';
 import 'package:flutter_uilogin/screen/login_screen.dart';
-import 'package:flutter_uilogin/services/firebase_service.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -14,8 +13,6 @@ import 'screen/home_screen.dart';
 import 'screen/search_screen.dart';
 import 'screen/create_post_screen.dart';
 import 'screen/profile_screen.dart';
-
-final firebaseService = FirebaseService();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

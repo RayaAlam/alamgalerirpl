@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_uilogin/services/pin_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -14,7 +13,6 @@ class CreatePostScreen extends StatefulWidget {
 class _CreatePostScreenState extends State<CreatePostScreen> {
   File? _image;
   final _titleController = TextEditingController();
-  final _pinService = PinService();
   bool _isLoading = false;
 
   Future<void> _pickImage() async {
@@ -39,11 +37,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _pinService.createPin(
-        title: _titleController.text,
-        imageFile: _image!,
-        userId: FirebaseAuth.instance.currentUser!.uid,
-      );
 
       Navigator.pop(context);
     } catch (e) {
