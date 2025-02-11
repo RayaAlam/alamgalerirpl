@@ -45,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
               sliver: StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('posts')
-
                       .snapshots(),
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -69,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     DetailScreen(pin: <String, dynamic>{
                                   "title": data["title"],
                                   "imageUrl": imageUrl,
+                                      "user": data["user"]
                                 }),
                               ),
                             );
