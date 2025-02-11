@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,9 +39,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await uploadFile(_image!);
-
-      Navigator.pop(context);
+      final gambar = await uploadFile(_image!);
+      await FirebaseFirestore.instance.collection("posts").doc().set(<String, Object>{
+        "title": _titleController.text,
+        "user": FirebaseAuth.instance.currentUser!.uid,
+        "created_at": Timestamp.now(),
+        "image" : gambar
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Upload Selesai')),
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error creating pin: $e')),
