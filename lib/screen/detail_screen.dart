@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DetailScreen extends StatelessWidget {
@@ -70,14 +71,21 @@ class DetailScreen extends StatelessWidget {
                         child: Icon(Icons.person, color: Colors.white),
                       ),
                       SizedBox(width: 12),
-                      Text(
-                        'Username',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
+                      FutureBuilder(
+                          future: FirebaseFirestore.instance
+                              .collection("users")
+                              .doc(pin["user"])
+                              .get(),
+                          builder: (context, snapshot) => Text(
+                            snapshot.data != null
+                                ? snapshot.data?.get("username")
+                                : "Loading...",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          )),
                       Spacer(),
                       ElevatedButton(
                         onPressed: () {},
