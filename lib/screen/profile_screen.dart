@@ -12,21 +12,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Data dummy untuk profile pins
-    final List<Map<String, dynamic>> profilePins = [
-      {
-        'imageUrl': 'https://picsum.photos/id/21/400/500',
-        'title': 'My Pin 1',
-        'height': 280.0,
-      },
-      {
-        'imageUrl': 'https://picsum.photos/id/22/400/300',
-        'title': 'My Pin 2',
-        'height': 220.0,
-      },
-      // Add more items as needed
-    ];
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: CustomScrollView(
@@ -45,62 +30,68 @@ class ProfileScreen extends StatelessWidget {
                     child: Icon(Icons.person, size: 50, color: Colors.white),
                   ),
                   SizedBox(height: 8),
-                  Text(
-                    FirebaseAuth.instance.currentUser!.email!,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  FutureBuilder(
+                      future: FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                          .get(),
+                      builder: (context, snapshot) => Text(
+                            snapshot.data != null
+                                ? snapshot.data?.get("username")
+                                : "Loading...",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )),
                 ],
               ),
             ),
           ),
           SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            sliver: StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('posts')
-                    .where("user",
-                    isEqualTo: FirebaseAuth.instance.currentUser!.uid)
-                    .snapshots(),
-                builder: (BuildContext context,
-                    AsyncSnapshot<QuerySnapshot> snapshot) {
-                  return SliverMasonryGrid(
-                    gridDelegate:
-                    SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2),
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final data = snapshot.data!.docs[index];
-                      final imageUrl = generatePresignedUrl(
-                          key: "gambar/${data['image']}");
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              sliver: StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('posts')
+                      .where("user",
+                          isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> snapshot) {
+                    return SliverMasonryGrid(
+                      gridDelegate:
+                          SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2),
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final data = snapshot.data!.docs[index];
+                        final imageUrl = generatePresignedUrl(
+                            key: "gambar/${data['image']}");
 
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DetailScreen(pin: <String, dynamic>{
-                                    "title": data["title"],
-                                    "imageUrl": imageUrl,
-                                  }),
-                            ),
-                          );
-                        },
-                        child: PinCard(
-                          imageUrl: imageUrl,
-                          title: data["title"],
-                          height: 300,
-                        ),
-                      );
-                    }, childCount: snapshot.data?.size ?? 0),
-                  );
-                })
-          ),
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailScreen(pin: <String, dynamic>{
+                                  "title": data["title"],
+                                  "imageUrl": imageUrl,
+                                }),
+                              ),
+                            );
+                          },
+                          child: PinCard(
+                            imageUrl: imageUrl,
+                            title: data["title"],
+                            height: 300,
+                          ),
+                        );
+                      }, childCount: snapshot.data?.size ?? 0),
+                    );
+                  })),
         ],
       ),
     );
