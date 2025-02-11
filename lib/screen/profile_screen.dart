@@ -79,6 +79,7 @@ class ProfileScreen extends StatelessWidget {
                                     DetailScreen(pin: <String, dynamic>{
                                   "title": data["title"],
                                   "imageUrl": imageUrl,
+                                      "user": data["user"]
                                 }),
                               ),
                             );
