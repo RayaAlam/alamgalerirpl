@@ -5,14 +5,11 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'dart:math';
 
-
 const bucketId = "caesar-flutter-storage";
 const accessKey = "ZHDREPK6EN0WNIB5JDFI";
 const secretKey = "Ey7umByPHhhwEyeiuwnaS0Rp75mWSkNfkzeEqNQD";
 const host = "is3.cloudhost.id";
 const region = "us-east-1";
-
-
 
 final s3client = AwsS3Client(
   region: region,
@@ -22,7 +19,8 @@ final s3client = AwsS3Client(
   secretKey: secretKey,
 );
 
-Future<http.MultipartFile> createMultipartFileFromStream(File file, String fieldName, String filename) async {
+Future<http.MultipartFile> createMultipartFileFromStream(
+    File file, String fieldName, String filename) async {
   final stream = file.openRead();
   final length = await file.length();
   return http.MultipartFile(
@@ -48,7 +46,8 @@ String _toHex(List<int> bytes) {
 
 /// Derives the signing key for AWS Signature Version 4.
 /// Normally, this should be done on your backend.
-List<int> getSigningKey(String secretKey, String dateStamp, String regionName, String serviceName) {
+List<int> getSigningKey(
+    String secretKey, String dateStamp, String regionName, String serviceName) {
   final kSecret = utf8.encode('AWS4' + secretKey);
   final kDate = _hmacSha256(kSecret, utf8.encode(dateStamp));
   final kRegion = _hmacSha256(kDate, utf8.encode(regionName));
@@ -92,18 +91,18 @@ Future<String> uploadFile(File file) async {
   final filename = generateRandomString(16);
   // Configuration variables.
   final bucket = bucketId;
-  final key = 'gambar/$filename'; // Where you want to store the file.// **Keep this secure!**// For Minio, this can usually be a dummy value.
+  final key =
+      'gambar/$filename'; // Where you want to store the file.// **Keep this secure!**// For Minio, this can usually be a dummy value.
 
-  print("ngaplod masbre nyang $filename");
+  print("upload to $filename");
 
   // siji
   final now = DateTime.now().toUtc();
-  final dateStamp = getDateStamp(now);         // Format: YYYYMMDD
-  final amzDate = getAmzDate(now);               // Format: YYYYMMDD'T'HHMMSS'Z'
+  final dateStamp = getDateStamp(now); // Format: YYYYMMDD
+  final amzDate = getAmzDate(now); // Format: YYYYMMDD'T'HHMMSS'Z'
 
   // loro
   final expiration = now.add(Duration(hours: 1)).toIso8601String();
-
 
   // Create a policy document. Adjust expiration and conditions as needed.
   final policy = {
@@ -133,7 +132,6 @@ Future<String> uploadFile(File file) async {
   final signature = _toHex(signatureBytes);
   print('Computed Signature: $signature');
 
-
   // Prepare the form fields required for the POST request.
   final fields = {
     'key': key,
@@ -154,7 +152,8 @@ Future<String> uploadFile(File file) async {
   var request = http.MultipartRequest('POST', uri);
   request.fields.addAll(fields);
 
-  var multipartFile = await createMultipartFileFromStream(file, 'file', filename);
+  var multipartFile =
+      await createMultipartFileFromStream(file, 'file', filename);
   request.files.add(multipartFile);
 
   // Send the request.
@@ -170,4 +169,94 @@ Future<String> uploadFile(File file) async {
   }
 
   return filename;
+}
+
+/// Generate a presigned URL for S3 GET Object using AWS Signature Version 4.
+///
+/// [accessKey] and [secretKey] are your AWS credentials.
+/// [region] is your S3 bucket region (e.g., 'us-east-1').
+/// [bucket] is your S3 bucket name.
+/// [key] is the object key in S3 (do not include a leading slash).
+/// [expiration] is the time in seconds until the URL expires.
+String generatePresignedUrl({
+  required String key,
+  int expiration = 3600,
+}) {
+  // Configuration variables.
+  final bucket = bucketId;
+  final service = 's3';
+  final algorithm = 'AWS4-HMAC-SHA256';
+
+  // Get the current UTC time
+  final now = DateTime.now().toUtc();
+  final amzDate = getAmzDate(now); // e.g. 20250211T123456Z
+  final dateStamp = getDateStamp(now); // e.g. 20250211
+
+  // Credential scope (used in both query params and string to sign)
+  final credentialScope = '$dateStamp/$region/$service/aws4_request';
+
+  // Query parameters required for a presigned URL
+  final queryParams = {
+    'X-Amz-Algorithm': algorithm,
+    'X-Amz-Credential': '$accessKey/$dateStamp/$region/s3/aws4_request',
+    'X-Amz-Date': amzDate,
+    'X-Amz-Expires': expiration.toString(),
+    'X-Amz-SignedHeaders': 'host',
+  };
+
+  // Construct the canonical query string from sorted query parameters.
+  final sortedKeys = queryParams.keys.toList()..sort();
+  final canonicalQuery = sortedKeys
+      .map((key) =>
+          '${Uri.encodeQueryComponent(key)}=${Uri.encodeQueryComponent(queryParams[key]!)}')
+      .join('&');
+
+  // Create canonical headers. For S3, we only need the host header.
+  final canonicalHeaders = 'host:$host\n';
+  final signedHeaders = 'host';
+
+  // Hash of an empty payload (for GET requests).
+  final payloadHash = "UNSIGNED-PAYLOAD";
+
+  // Build the canonical request
+  // The canonical URI must start with a slash.
+  final canonicalRequest = [
+    'GET',
+    '/$bucket/$key',
+    canonicalQuery,
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join('\n');
+
+  // Create the string to sign.
+  final hashedCanonicalRequest =
+      sha256.convert(utf8.encode(canonicalRequest)).toString();
+  final stringToSign = [
+    algorithm,
+    amzDate,
+    credentialScope,
+    hashedCanonicalRequest,
+  ].join('\n');
+
+  // Derive the signing key
+  final signingKey = getSigningKey(secretKey, dateStamp, region, 's3');
+
+  // Calculate the signature as hex.
+  final signature = _toHex(_hmacSha256(signingKey, utf8.encode(stringToSign)));
+
+  // Build the final presigned URL
+  final presignedUri = Uri.https(
+    host,
+    '/$bucket/$key',
+    {
+      ...queryParams,
+      'X-Amz-Signature': signature,
+    },
+  );
+
+  print("dapet presigned url from $key");
+  print(presignedUri.toString());
+
+  return presignedUri.toString();
 }

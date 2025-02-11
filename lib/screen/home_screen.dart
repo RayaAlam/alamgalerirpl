@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_uilogin/screen/create_post_screen.dart';
 import 'package:flutter_uilogin/screen/search_screen.dart';
+import 'package:flutter_uilogin/services/storage.dart';
 import 'package:flutter_uilogin/widget/pin_card.dart';
 
 import 'package:flutter/material.dart';
@@ -55,23 +56,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisSpacing: 8,
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final data = snapshot.data!.docs[index];
+                        final imageUrl = generatePresignedUrl(key: "gambar/${data['image']}");
 
                         return GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DetailScreen(
-                                    pin: <String, dynamic>{
-                                      "title": data["title"],
-                                      "imageUrl": "https://picsum.photos/100/100",
-                                    }
-                                  ),
+                                builder: (context) =>
+                                    DetailScreen(pin: <String, dynamic>{
+                                  "title": data["title"],
+                                  "imageUrl": imageUrl,
+                                }),
                               ),
                             );
                           },
                           child: PinCard(
-                            imageUrl: "https://picsum.photos/100/100",
+                            imageUrl: imageUrl,
                             title: data["title"],
                             height: 400,
                           ),
