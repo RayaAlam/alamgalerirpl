@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_uilogin/widget/pin_card.dart';
@@ -41,7 +42,7 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Username',
+                    FirebaseAuth.instance.currentUser!.email!,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,

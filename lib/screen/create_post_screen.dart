@@ -1,6 +1,10 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_uilogin/services/pin_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreatePostScreen extends StatefulWidget {
   @override
@@ -8,12 +12,47 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
   File? _image;
+  final _titleController = TextEditingController();
+  final _pinService = PinService();
+  bool _isLoading = false;
 
   Future<void> _pickImage() async {
-    // Implement image picking logic
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _createPin() async {
+    if (_image == null || _titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select an image and enter a title')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await _pinService.createPin(
+        title: _titleController.text,
+        imageFile: _image!,
+        userId: FirebaseAuth.instance.currentUser!.uid,
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error creating pin: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -22,28 +61,41 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       appBar: AppBar(
         title: Text('Create Pin'),
         actions: [
-          TextButton(
-            onPressed: () {
-              // Implement save pin logic
-            },
-            child: Text('Save'),
-          ),
+          if (!_isLoading)
+            TextButton(
+              onPressed: _createPin,
+              child: Text('Save'),
+            ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+        padding: EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
               onTap: _pickImage,
-              child: _image != null
-                  ? Image.file(_image!, width: double.infinity, height: 200, fit: BoxFit.cover)
-                  : Container(
-                width: double.infinity,
+              child: Container(
                 height: 200,
-                color: Colors.grey[300],
-                child: Icon(Icons.add_a_photo, size: 40, color: Colors.grey),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: _image != null
+                    ? ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(
+                    _image!,
+                    fit: BoxFit.cover,
+                  ),
+                )
+                    : Icon(
+                  Icons.add_photo_alternate,
+                  size: 50,
+                  color: Colors.grey[600],
+                ),
               ),
             ),
             SizedBox(height: 16),
@@ -54,19 +106,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Tell everyone what your Pin is about',
-                border: OutlineInputBorder(),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 }
-
