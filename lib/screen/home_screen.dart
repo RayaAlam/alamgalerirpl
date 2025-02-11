@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
               sliver: StreamBuilder(
                   stream: FirebaseFirestore.instance
                       .collection('posts')
+
                       .snapshots(),
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -56,7 +57,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisSpacing: 8,
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final data = snapshot.data!.docs[index];
-                        final imageUrl = generatePresignedUrl(key: "gambar/${data['image']}");
+                        final imageUrl = generatePresignedUrl(
+                            key: "gambar/${data['image']}");
 
                         return GestureDetector(
                           onTap: () {
@@ -74,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: PinCard(
                             imageUrl: imageUrl,
                             title: data["title"],
-                            height: 400,
+                            height: 300,
                           ),
                         );
                       }, childCount: snapshot.data?.size ?? 0),

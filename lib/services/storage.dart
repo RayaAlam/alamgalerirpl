@@ -214,8 +214,6 @@ String generatePresignedUrl({
   // Create canonical headers. For S3, we only need the host header.
   final canonicalHeaders = 'host:$host\n';
   final signedHeaders = 'host';
-
-  // Hash of an empty payload (for GET requests).
   final payloadHash = "UNSIGNED-PAYLOAD";
 
   // Build the canonical request
