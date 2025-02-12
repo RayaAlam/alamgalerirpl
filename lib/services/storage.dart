@@ -1,15 +1,10 @@
 import 'package:flutter_aws_s3_client/flutter_aws_s3_client.dart';
+import 'package:flutter_uilogin/services/server_storage.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'dart:math';
-
-const bucketId = "caesar-flutter-storage";
-const accessKey = "ZHDREPK6EN0WNIB5JDFI";
-const secretKey = "Ey7umByPHhhwEyeiuwnaS0Rp75mWSkNfkzeEqNQD";
-const host = "is3.cloudhost.id";
-const region = "us-east-1";
 
 final s3client = AwsS3Client(
   region: region,
