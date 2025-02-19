@@ -66,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
      HomeScreen(),
-     SearchScreen(),
+     // SearchScreen(),
      CreatePostScreen(),
      ProfileScreen(),
   ];
@@ -91,10 +91,10 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.home),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(Icons.search),
+          //   label: 'Search',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(Icons.add_circle_outline),
             label: 'Create',

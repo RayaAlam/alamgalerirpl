@@ -99,15 +99,15 @@ class DetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildActionButton(Icons.thumb_up, 'Like'),
-                      _buildActionButton(Icons.comment, 'Comment'),
-                      _buildActionButton(Icons.share, 'Share'),
-                    ],
-                  ),
+                  // SizedBox(height: 16),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  //   children: [
+                  //     _buildActionButton(Icons.thumb_up, 'Like'),
+                  //     _buildActionButton(Icons.comment, 'Comment'),
+                  //     _buildActionButton(Icons.share, 'Share'),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
