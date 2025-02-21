@@ -36,9 +36,76 @@ class DetailScreen extends StatelessWidget {
                     color: Colors.black.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.more_vert, color: Colors.white),
+                  child: Icon(Icons.delete, color: Colors.white),
                 ),
-                onPressed: () {},
+                onPressed: () async {
+
+                    try {
+                      // Tampilkan dialog konfirmasi
+                      bool? confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            backgroundColor: Colors.grey[900],
+                            title: Text(
+                              'Konfirmasi Hapus',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            content: Text(
+                              'Apakah Anda yakin ingin menghapus postingan ini?',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(false),
+                                child: Text(
+                                  'Batal',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(true),
+                                child: Text(
+                                  'Hapus',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+
+                      // Jika user mengkonfirmasi
+                      if (confirm == true) {
+                        // Hapus dokumen dari Firestore
+                        await FirebaseFirestore.instance
+
+                            .collection('posts')
+                            .doc(pin['id'])
+                            .delete();
+
+                        // Kembali ke halaman sebelumnya
+                        Navigator.pop(context);
+
+                        // Tampilkan snackbar sukses
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Postingan berhasil dihapus'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      // Tampilkan snackbar error jika terjadi kesalahan
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Terjadi kesalahan: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+
+                },
               ),
             ],
             expandedHeight: 400,

@@ -69,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   "title": data["title"],
                                   "imageUrl": imageUrl,
                                       "user": data["user"]
+
                                 }),
                               ),
                             );
