@@ -83,18 +83,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             hintText: 'Cari postingan...',
                             hintStyle: TextStyle(color: Colors.white70),
                             contentPadding: EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 7),
+                                horizontal: 16, vertical: 9),
                             border: InputBorder.none,
-                            suffixIcon: IconButton(
-                              icon: Icon(Icons.search, color: Colors.white70),
-                              onPressed: () {
-                                setState(() {
-                                  _searchQuery = _searchController.text
-                                      .trim()
-                                      .toLowerCase();
-                                });
-                                FocusScope.of(context).unfocus();
-                              },
+                            suffixIcon: Padding(
+                              padding: EdgeInsets.only(top: 2), // Add padding to move the icon up
+                              child: IconButton(
+                                icon: Icon(Icons.search, color: Colors.white70),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchQuery = _searchController.text.trim().toLowerCase();
+                                  });
+                                  FocusScope.of(context).unfocus();
+                                },
+                                padding: EdgeInsets.zero, // Remove default padding
+                                constraints: BoxConstraints(), // Remove default constraints
+                                iconSize: 22, // Slightly smaller icon for better vertical positioning
+                              ),
                             ),
                           ),
                           onSubmitted: (value) {
